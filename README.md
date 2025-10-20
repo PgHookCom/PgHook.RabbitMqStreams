@@ -8,7 +8,32 @@ PgHook captures changes from PostgreSQL using logical replication and forwards t
 
 ## Quick Start
 
-### Minimal Configuration
+1. Enable logical replication by adding the following to your `postgresql.conf`:
+
+```
+wal_level = logical
+
+# If needed, increase the number of WAL senders and replication slots.
+# The default is 10 for both.
+max_wal_senders = 10
+max_replication_slots = 10
+```
+
+**Note:** PostgreSQL must be restarted after modifying this setting.
+
+2. Create a publication for the tables you want to replicate:
+
+```sql
+CREATE PUBLICATION test_publication FOR TABLE table1, table2;
+```
+
+3. Create RabbitMQ Stream
+
+Use RabbitMQ CLI or management UI to create the target stream (PgHook will not create it automatically).
+
+**Note:** Super Streams are also supported - see optional environment variables below.
+
+4. Run PgHook with minimal configuration
 
 ```bash
 docker run --rm --network=host \
@@ -43,79 +68,6 @@ docker run --rm --network=host \
 | `PGH_RMQ_VHOST` | `/` | RabbitMQ virtual host |
 | `PGH_RMQ_IS_SUPER_STREAM` | `false` | Use RabbitMQ super stream for partitioning |
 | `PGH_RMQ_PARTITION_KEY_FIELDS_*` | PK fields | Define custom partition keys for super streams (e.g., `PGH_RMQ_PARTITION_KEY_FIELDS_1="schema.table\|column1,column2"`) |
-
-## Configuration Examples
-
-### With Permanent Replication Slot
-
-```bash
-docker run --rm --network=host \
-  -e PGH_POSTGRES_CONN="Server=localhost;Username=postgres;Password=postgres;Database=test_db;ApplicationName=PgHook;Trust Server Certificate=true" \
-  -e PGH_PUBLICATION_NAMES="test_publication" \
-  -e PGH_REPLICATION_SLOT="test_slot" \
-  -e PGH_USE_PERMANENT_SLOT=true \
-  -e PGH_RMQ_ENDPOINTS="localhost:5552" \
-  -e PGH_RMQ_USERNAME="guest" \
-  -e PGH_RMQ_PASSWORD="guest" \
-  -e PGH_RMQ_STREAM_NAME="test_stream" \
-  pghook/pghook-rabbitmq-streams
-```
-
-### With Super Stream Partitioning
-
-```bash
-docker run --rm --network=host \
-  -e PGH_POSTGRES_CONN="Server=localhost;Username=postgres;Password=postgres;Database=test_db;ApplicationName=PgHook;Trust Server Certificate=true" \
-  -e PGH_PUBLICATION_NAMES="test_publication" \
-  -e PGH_RMQ_ENDPOINTS="localhost:5552" \
-  -e PGH_RMQ_USERNAME="guest" \
-  -e PGH_RMQ_PASSWORD="guest" \
-  -e PGH_RMQ_STREAM_NAME="test_stream" \
-  -e PGH_RMQ_IS_SUPER_STREAM=true \
-  -e PGH_RMQ_PARTITION_KEY_FIELDS_1="public.test_table|last_name" \
-  pghook/pghook-rabbitmq-streams
-```
-
-## Prerequisites
-
-### PostgreSQL Setup
-
-1. Enable logical replication by adding the following to your `postgresql.conf`:
-
-```
-wal_level = logical
-
-# If needed, increase the number of WAL senders and replication slots.
-# The default is 10 for both.
-max_wal_senders = 10
-max_replication_slots = 10
-```
-
-**Note:** PostgreSQL must be restarted after modifying this setting.
-
-2. Create a publication for the tables you want to replicate:
-
-```sql
-CREATE PUBLICATION test_publication FOR TABLE table1, table2;
-```
-
-### RabbitMQ
-
-- RabbitMQ Streams broker running and accessible
-- Valid credentials with access to publish to streams
-- Target stream already created (PgHook does not create streams)
-
-## How It Works
-
-1. Connects to PostgreSQL using the provided connection string
-2. Subscribes to specified publications
-3. Creates or reuses a replication slot to capture changes
-4. Streams all database changes (INSERT, UPDATE, DELETE) to RabbitMQ Streams
-5. Supports partitioning via super streams for distributed processing
-
-## Notes
-
-- Use `--network=host` for local development; adjust for production networking
 
 ## Persistent Replication Slots
 
@@ -161,6 +113,50 @@ docker run --network=host --rm \
 ```
 
 Format: `schema.table|column1,column2` (comma-separated columns for composite partition keys)
+
+## Configuration Examples
+
+### With Permanent Replication Slot
+
+```bash
+docker run --rm --network=host \
+  -e PGH_POSTGRES_CONN="Server=localhost;Username=postgres;Password=postgres;Database=test_db;ApplicationName=PgHook;Trust Server Certificate=true" \
+  -e PGH_PUBLICATION_NAMES="test_publication" \
+  -e PGH_REPLICATION_SLOT="test_slot" \
+  -e PGH_USE_PERMANENT_SLOT=true \
+  -e PGH_RMQ_ENDPOINTS="localhost:5552" \
+  -e PGH_RMQ_USERNAME="guest" \
+  -e PGH_RMQ_PASSWORD="guest" \
+  -e PGH_RMQ_STREAM_NAME="test_stream" \
+  pghook/pghook-rabbitmq-streams
+```
+
+### With Super Stream Partitioning
+
+```bash
+docker run --rm --network=host \
+  -e PGH_POSTGRES_CONN="Server=localhost;Username=postgres;Password=postgres;Database=test_db;ApplicationName=PgHook;Trust Server Certificate=true" \
+  -e PGH_PUBLICATION_NAMES="test_publication" \
+  -e PGH_RMQ_ENDPOINTS="localhost:5552" \
+  -e PGH_RMQ_USERNAME="guest" \
+  -e PGH_RMQ_PASSWORD="guest" \
+  -e PGH_RMQ_STREAM_NAME="test_stream" \
+  -e PGH_RMQ_IS_SUPER_STREAM=true \
+  -e PGH_RMQ_PARTITION_KEY_FIELDS_1="public.test_table|last_name" \
+  pghook/pghook-rabbitmq-streams
+```
+
+## How It Works
+
+1. Connects to PostgreSQL using the provided connection string
+2. Subscribes to specified publications
+3. Creates or reuses a replication slot to capture changes
+4. Streams all database changes (INSERT, UPDATE, DELETE) to RabbitMQ Streams
+5. Supports partitioning via super streams for distributed processing
+
+## Notes
+
+- Use `--network=host` for local development; adjust for production networking
 
 ## Troubleshooting
 
