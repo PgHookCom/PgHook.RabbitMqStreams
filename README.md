@@ -8,7 +8,7 @@ PgHook captures changes from PostgreSQL using logical replication and forwards t
 
 ## Quick Start
 
-1. Enable logical replication by adding the following to your `postgresql.conf`:
+### 1. Enable logical replication by adding the following to your `postgresql.conf`:
 
 ```
 wal_level = logical
@@ -21,19 +21,19 @@ max_replication_slots = 10
 
 **Note:** PostgreSQL must be restarted after modifying this setting.
 
-2. Create a publication for the tables you want to replicate:
+### 2. Create a publication for the tables you want to replicate:
 
 ```sql
 CREATE PUBLICATION test_publication FOR TABLE table1, table2;
 ```
 
-3. Create RabbitMQ Stream
+### 3. Create RabbitMQ Stream
 
 Use RabbitMQ CLI or management UI to create the target stream (PgHook will not create it automatically).
 
 **Note:** Super Streams are also supported - see optional environment variables below.
 
-4. Run PgHook with minimal configuration
+### 4. Run PgHook with minimal configuration
 
 ```bash
 docker run --rm --network=host \
