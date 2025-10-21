@@ -43,7 +43,7 @@ docker run --rm --network=host \
   -e PGH_RMQ_USERNAME="guest" \
   -e PGH_RMQ_PASSWORD="guest" \
   -e PGH_RMQ_STREAM_NAME="test_stream" \
-  pghook/pghook-rabbitmq-streams
+  pghook/rabbitmq-streams
 ```
 
 ## Environment Variables
@@ -109,7 +109,7 @@ docker run --network=host --rm \
   -e PGH_RMQ_IS_SUPER_STREAM=true \
   -e PGH_RMQ_PARTITION_KEY_FIELDS_1="public.table_a|last_name,first_name" \
   -e PGH_RMQ_PARTITION_KEY_FIELDS_2="public.table_b|postal_code,address" \
-  pghook/pghook-rabbitmq-streams
+  pghook/rabbitmq-streams
 ```
 
 Format: `schema.table|column1,column2` (comma-separated columns for composite partition keys)
@@ -128,7 +128,7 @@ docker run --rm --network=host \
   -e PGH_RMQ_USERNAME="guest" \
   -e PGH_RMQ_PASSWORD="guest" \
   -e PGH_RMQ_STREAM_NAME="test_stream" \
-  pghook/pghook-rabbitmq-streams
+  pghook/rabbitmq-streams
 ```
 
 ### With Super Stream Partitioning
@@ -143,7 +143,7 @@ docker run --rm --network=host \
   -e PGH_RMQ_STREAM_NAME="test_stream" \
   -e PGH_RMQ_IS_SUPER_STREAM=true \
   -e PGH_RMQ_PARTITION_KEY_FIELDS_1="public.test_table|last_name" \
-  pghook/pghook-rabbitmq-streams
+  pghook/rabbitmq-streams
 ```
 
 ## How It Works
