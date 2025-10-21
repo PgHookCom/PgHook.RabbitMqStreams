@@ -63,7 +63,7 @@ docker run --rm --network=host \
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PGH_USE_PERMANENT_SLOT` | `false` | Create a permanent replication slot (survives service restart) |
+| `PGH_USE_PERMANENT_SLOT` | `false` | Use a permanent replication slot (survives service restart) |
 | `PGH_REPLICATION_SLOT` | Auto-generated | PostgreSQL replication slot name (required if `PGH_USE_PERMANENT_SLOT=true`) |
 | `PGH_RMQ_VHOST` | `/` | RabbitMQ virtual host |
 | `PGH_RMQ_IS_SUPER_STREAM` | `false` | Use RabbitMQ super stream for partitioning |
