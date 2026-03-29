@@ -2,6 +2,11 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/runtime:10.0-alpine AS base
+
+# install native deps as root
+USER root
+RUN apk add --no-cache krb5-libs
+
 USER $APP_UID
 WORKDIR /app
 
